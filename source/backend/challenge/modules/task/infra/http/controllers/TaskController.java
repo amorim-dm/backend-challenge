@@ -1,5 +1,6 @@
 package backend.challenge.modules.task.infra.http.controllers;
 
+import backend.challenge.modules.task.dtos.TaskDTO;
 import backend.challenge.modules.task.infra.http.views.TaskView;
 import backend.challenge.modules.task.models.Task;
 import backend.challenge.modules.task.services.*;
@@ -22,54 +23,53 @@ public class TaskController {
 	public TaskController(
 		final ICreateTaskService createTaskService,
 		final IDeleteTaskService deleteTaskService,
-		final IRetrieveAllTasksService retrieveAllTasksService
+		final IRetrieveAllTasksService retrieveAllTasksService,
+		final IRetrieveTaskByIdService retrieveTaskByIdService,
+		final IUpdateTaskService updateTaskService
 	) {
 		this.createTaskService = createTaskService;
 		this.deleteTaskService = deleteTaskService;
 		this.retrieveAllTasksService = retrieveAllTasksService;
-		this.retrieveTaskByIdService = null;
-		this.updateTaskService = null;
+		this.retrieveTaskByIdService = retrieveTaskByIdService;
+		this.updateTaskService = updateTaskService;
 	}
 
 	@GET
 	public Response show() {
-		// TODO: Rota que lista todas as tarefas
-
-		return DefaultResponse.ok().entity("Hello world");
+			return DefaultResponse.ok(retrieveAllTasksService.execute());
 	}
 
 	@GET
 	@Path("single/{taskId}")
 	public Response index(@PathParam("taskId") Long taskId) {
-		// TODO: A rota deve retornar somente a tarefa a qual o id corresponder
-
-		return DefaultResponse.ok().entity("Hello world");
+		return DefaultResponse.ok().entity(retrieveTaskByIdService.execute(taskId));
 	}
 
 	@POST
 	public Response create(TaskView task) {
-		// TODO: A rota deve receber title e description, sendo o `title` o título da tarefa e `description` uma descrição da tarefa.
-
-		return DefaultResponse.ok().entity("Hello world");
+			return DefaultResponse.ok().entity(createTaskService.execute(TaskDTO.create()
+			.setTitle(task.getTitle())
+			.setDescription(task.getDescription())));
 	}
 
 	@PUT
 	@Path("single/{taskId}")
 	public Response update(@PathParam("taskId") Long taskId, Task task) {
-		/*
-			TODO:  A rota deve alterar apenas o title e description da tarefa
-			 			 que possua o id igual ao id correspondente nos parâmetros da rota.
-		 */
-
-		return DefaultResponse.ok().entity("Hello world");
+		Task updatedTask = this.retrieveTaskByIdService.execute(taskId);
+		if(updatedTask != null) {
+			updatedTask.setTitle(task.getTitle());
+			updatedTask.setDescription(task.getDescription());
+			return DefaultResponse.ok().entity(this.updateTaskService.execute(updatedTask));
+		} else {
+			return DefaultResponse.notFound().statusCode(400);
+		}
 	}
 
 	@DELETE
 	@Path("single/{taskId}")
 	public Response delete(@PathParam("taskId") Long taskId) {
-		// TODO: A rota deve deletar a tarefa com o id correspondente nos parâmetros da rota
-
-		return DefaultResponse.ok().entity("Hello world");
+		this.deleteTaskService.execute(taskId);
+		return DefaultResponse.ok().entity("Deleted");
 	}
 
 }
