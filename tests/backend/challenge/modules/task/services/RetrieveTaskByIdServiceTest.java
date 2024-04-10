@@ -1,9 +1,12 @@
 package backend.challenge.modules.task.services;
 
-
+import backend.challenge.modules.task.models.Task;
+import backend.challenge.modules.task.dtos.TaskDTO;
 import backend.challenge.modules.task.repositories.ITaskRepository;
 import backend.challenge.modules.task.repositories.TaskRepository;
 import kikaha.core.test.KikahaRunner;
+
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,13 +15,21 @@ import org.junit.runner.RunWith;
 public class RetrieveTaskByIdServiceTest {
 
 	private IRetrieveTaskByIdService retrieveTaskByIdService;
+	private ICreateTaskService createTaskService;
+	private ITaskRepository taskRepository;
+
+	@Before
+	public void init() {
+		this.taskRepository = new TaskRepository();
+		this.retrieveTaskByIdService = new RetrieveTaskByIdService(taskRepository);
+		this.createTaskService = new CreateTaskService(taskRepository);
+	}
 
 	@Test
 	public void shouldBeAbleToListTheTaskById() {
-		/*
-			TODO: Para que esse teste passe, sua aplicação deve permitir que seja
-			 			retornado uma tarefa com o mesmo id informado.
-		*/
+		TaskDTO taskDTO = TaskDTO.create().setTitle("TEST").setDescription("TEST DESC");
+		Task task = createTaskService.execute(taskDTO);
+		Assert.assertEquals(retrieveTaskByIdService.execute(task.getId()), task);
 	}
 
 }
